@@ -14,6 +14,9 @@ from pathlib import Path
 import os
 import sys
 
+import pymysql
+pymysql.install_as_MySQLdb()
+
 # Intentar cargar variables de entorno desde .env (opcional)
 try:
     from dotenv import load_dotenv
@@ -35,7 +38,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-kddezpmo^=m)+15*%wut@cgw(m
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,*.up.railway.app').split(',')
 
 
 # Application definition
@@ -62,6 +65,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # <--- COLÓCALO AQUÍ
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -98,29 +102,20 @@ WSGI_APPLICATION = 'possitema.wsgi.application'
 
 USE_MYSQL = os.getenv('DB_ENGINE', '').startswith('django.db.backends.mysql')
 
-if USE_MYSQL:
-    # Configuración para MySQL usando PyMySQL
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': os.getenv('DB_NAME', 'sistemados_db'),
-            'USER': os.getenv('DB_USER', 'root'),
-            'PASSWORD': os.getenv('DB_PASSWORD', 'root'),
-            'HOST': os.getenv('DB_HOST', '127.0.0.1'),
-            'PORT': int(os.getenv('DB_PORT', '3306')),
-            'OPTIONS': {
-                'charset': 'utf8mb4',
-            },
-        }
+# Configuración única para MySQL
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': os.getenv('DB_NAME', 'sistemados_db'),
+        'USER': os.getenv('DB_USER', 'root'),
+        'PASSWORD': os.getenv('DB_PASSWORD', 'root'),
+        'HOST': os.getenv('DB_HOST', '127.0.0.1'),
+        'PORT': int(os.getenv('DB_PORT', '3306')),
+        'OPTIONS': {
+            'charset': 'utf8mb4',
+        },
     }
-else:
-    # Configuración para SQLite (por defecto)
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
+}
 
 
 # Password validation
@@ -180,6 +175,9 @@ EMAIL_HOST_PASSWORD = 'upspanghyuwbomxy'  # Contraseña por defecto, se sobrescr
 
 LOGIN_REDIRECT_URL = '/pos/dashboard/'
 LOGIN_URL = '/usuarios/login/'
+
+# Optimización de archivos estáticos (Compresión y caché)
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 LOGOUT_REDIRECT_URL = '/usuarios/login/'
 APPEND_SLASH = True
