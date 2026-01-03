@@ -13,10 +13,9 @@ reportlab==4.4.5
 sqlparse==0.5.5
 tzdata==2025.3
 PyMySQL==1.1.0
-
-
 gunicorn
 whitenoise
 python-dotenv
 mysqlclient
+
 
