@@ -1,1 +1,1 @@
-web: gunicorn sistemados.wsgi
+web: gunicorn possitema.wsgi
