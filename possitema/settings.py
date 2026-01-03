@@ -181,3 +181,5 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 LOGOUT_REDIRECT_URL = '/usuarios/login/'
 APPEND_SLASH = True
+
+CSRF_TRUSTED_ORIGINS = ['https://poreyctopersonal-production.up.railway.app']
