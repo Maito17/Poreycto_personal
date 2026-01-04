@@ -177,7 +177,7 @@ LOGIN_REDIRECT_URL = '/pos/dashboard/'
 LOGIN_URL = '/usuarios/login/'
 
 # Optimización de archivos estáticos (Compresión y caché)
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 LOGOUT_REDIRECT_URL = '/usuarios/login/'
 APPEND_SLASH = True
