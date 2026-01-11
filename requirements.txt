@@ -35,3 +35,4 @@ gunicorn
 whitenoise
 python-dotenv
 mysqlclient
+google-generativeai
