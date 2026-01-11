@@ -8,6 +8,15 @@ from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 from django.http import JsonResponse
 from .forms import SignUpForm
+from django.utils.crypto import get_random_string
+from django.utils import timezone
+from django.core.mail import send_mail
+from django.conf import settings
+from django.contrib.auth.hashers import make_password
+from datetime import timedelta
+
+# Simulación de almacenamiento de tokens (usar modelo en producción)
+password_reset_tokens = {}
 
 def registro_view(request):
     """Vista para el registro de nuevos usuarios"""
@@ -67,27 +76,24 @@ def login_view(request):
     """Vista personalizada para el login"""
     # Si el usuario ya está autenticado, redirigir
     if request.user.is_authenticated:
-        return redirect('possitema:dashboard')
+        # Solo redirigir si NO está en proceso de recuperación de contraseña
+        if not request.GET.get('reset'):
+            return redirect('possitema:dashboard')
     
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
-        
         # Autenticar usuario
         user = authenticate(request, username=username, password=password)
-        
         if user is not None:
-            # Login exitoso - los signals se encargarán de registrar la entrada automáticamente
             login(request, user)
             messages.success(request, f'✓ Bienvenido {user.get_full_name() or user.username}')
             return redirect('possitema:dashboard')
         else:
-            # Credenciales incorrectas
             error_message = 'Usuario o contraseña incorrectos. Por favor, intenta de nuevo.'
             return render(request, 'usuarios/login.html', {
                 'error_message': error_message
             })
-    
     # GET request - mostrar el formulario
     return render(request, 'usuarios/login.html')
 
@@ -877,4 +883,51 @@ def estadisticas_acceso(request):
     }
     
     return render(request, 'usuarios/estadisticas_acceso.html', context)
+
+
+def password_reset_request(request):
+    error = success = None
+    show_password_reset = True
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        try:
+            user = User.objects.get(email=email)
+            token = get_random_string(32)
+            password_reset_tokens[token] = {
+                'user_id': user.id,
+                'expires': timezone.now() + timedelta(hours=1)
+            }
+            reset_url = request.build_absolute_uri(f'/usuarios/password_reset_confirm/?token={token}')
+            send_mail(
+                'Recuperación de contraseña',
+                f'Para restablecer tu contraseña haz clic aquí: {reset_url}',
+                settings.DEFAULT_FROM_EMAIL,
+                [email],
+                fail_silently=False,
+            )
+            success = 'Te hemos enviado un correo con el enlace para restablecer tu contraseña.'
+        except User.DoesNotExist:
+            error = 'No existe una cuenta con ese correo.'
+        except Exception as e:
+            import traceback
+            error = f'Error inesperado: {str(e)}'
+            print('Error en password_reset_request:', traceback.format_exc())
+    return render(request, 'usuarios/login.html', {'error': error, 'success': success, 'show_password_reset': show_password_reset})
+
+def password_reset_confirm(request):
+    from django.contrib.auth import logout
+    logout(request)
+    error = success = None
+    token = request.GET.get('token')
+    data = password_reset_tokens.get(token)
+    if not data or data['expires'] < timezone.now():
+        error = 'El enlace es inválido o ha expirado.'
+    elif request.method == 'POST':
+        new_password = request.POST.get('new_password')
+        user = User.objects.get(id=data['user_id'])
+        user.password = make_password(new_password)
+        user.save()
+        success = 'Tu contraseña ha sido cambiada exitosamente.'
+        del password_reset_tokens[token]
+    return render(request, 'usuarios/password_reset_confirm.html', {'error': error, 'success': success})
 

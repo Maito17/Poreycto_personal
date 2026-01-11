@@ -16,12 +16,13 @@ def get_client_ip(request):
 @receiver(user_logged_in)
 def log_user_login(sender, request, user, **kwargs):
     """Se dispara cuando un usuario inicia sesión (LOGIN)"""
+    if user is None or not getattr(user, 'id', None):
+        # No registrar asistencia si no hay usuario autenticado
+        return
     ip = get_client_ip(request)
     ahora = timezone.now()
-    
     # Obtener o crear registro de hoy
     registro = RegistroAsistencia.get_or_create_today(user)
-    
     # Registrar entrada si no la tiene
     if not registro.hora_entrada:
         registro.hora_entrada = ahora.time()
@@ -32,9 +33,11 @@ def log_user_login(sender, request, user, **kwargs):
 @receiver(user_logged_out)
 def log_user_logout(sender, request, user, **kwargs):
     """Se dispara cuando un usuario cierra sesión (LOGOUT)"""
+    if user is None or not getattr(user, 'id', None):
+        # No registrar asistencia si no hay usuario autenticado
+        return
     ip = get_client_ip(request)
     ahora = timezone.now()
-    
     # Obtener registro de hoy
     registro = RegistroAsistencia.get_or_create_today(user)
     

@@ -33,16 +33,17 @@ def registrar_login(sender, request, user, **kwargs):
     Señal que se dispara cuando un usuario inicia sesión.
     Registra automáticamente la entrada en RegistroAcceso
     """
+    if user is None or not getattr(user, 'id', None):
+        logger.warning("Login detectado sin usuario autenticado. No se registra en RegistroAcceso.")
+        return
     try:
         ip = obtener_ip_cliente(request)
         user_agent = obtener_user_agent(request)
-        
         # Intentar obtener el último logout para calcular duración
         ultimo_logout = RegistroAcceso.objects.filter(
             user=user,
             tipo_evento='LOGOUT'
         ).order_by('-fecha_hora').first()
-        
         RegistroAcceso.objects.create(
             user=user,
             tipo_evento='LOGIN',
@@ -51,9 +52,8 @@ def registrar_login(sender, request, user, **kwargs):
             notas=f'Login exitoso desde {ip}'
         )
         logger.info(f"Login registrado para usuario: {user.username} desde IP: {ip}")
-        
     except Exception as e:
-        logger.error(f"Error registrando login para {user.username}: {str(e)}")
+        logger.error(f"Error registrando login para usuario desconocido: {str(e)}")
 
 
 @receiver(user_logged_out)
@@ -62,32 +62,30 @@ def registrar_logout(sender, request, user, **kwargs):
     Señal que se dispara cuando un usuario cierra sesión.
     Registra automáticamente la salida en RegistroAcceso
     """
+    if user is None or not getattr(user, 'id', None):
+        # No registrar logout si no hay usuario autenticado
+        logger.warning("Logout detectado sin usuario autenticado. No se registra en RegistroAcceso.")
+        return
     try:
         ip = obtener_ip_cliente(request)
         user_agent = obtener_user_agent(request)
-        
         # Encontrar el último login para calcular la duración de la sesión
         ultimo_login = RegistroAcceso.objects.filter(
             user=user,
             tipo_evento='LOGIN'
         ).order_by('-fecha_hora').first()
-        
         duracion = None
         duracion_formateada = None
-        
         if ultimo_login:
             duracion = timezone.now() - ultimo_login.fecha_hora
-            
             # Convertir a horas y minutos
             total_segundos = int(duracion.total_seconds())
             horas = total_segundos // 3600
             minutos = (total_segundos % 3600) // 60
-            
             if horas > 0:
                 duracion_formateada = f"{horas}h {minutos}m"
             else:
                 duracion_formateada = f"{minutos}m"
-        
         registro = RegistroAcceso.objects.create(
             user=user,
             tipo_evento='LOGOUT',
@@ -97,9 +95,8 @@ def registrar_logout(sender, request, user, **kwargs):
             notas=f'Logout desde {ip} - Duración: {duracion_formateada if duracion_formateada else "Sin registro"}'
         )
         logger.info(f"Logout registrado para usuario: {user.username} desde IP: {ip} - Duración: {duracion_formateada}")
-        
     except Exception as e:
-        logger.error(f"Error registrando logout para {user.username}: {str(e)}")
+        logger.error(f"Error registrando logout para usuario desconocido: {str(e)}")
 
 
 # =========================================================================

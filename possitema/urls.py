@@ -36,7 +36,9 @@ urlpatterns = [
     path('reportes/', include('reportes.urls', namespace='reportes')),
     path('gasto/', include('gasto.urls', namespace='gasto')),
     path('roles/', RedirectView.as_view(pattern_name='usuarios:lista_roles')),
-    ]
+    # Endpoint de IA de ventas
+    path('api/ia-ventas/', __import__('possitema.ia_ventas').ia_ventas.ia_ventas, name='ia_ventas'),
+]
 
 # Configuración de archivos estáticos y media (si es aplicable)
 if settings.DEBUG:

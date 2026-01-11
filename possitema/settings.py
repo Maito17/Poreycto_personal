@@ -17,6 +17,7 @@ import sys
 import pymysql
 pymysql.install_as_MySQLdb()
 
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # Intentar cargar variables de entorno desde .env (opcional)
 try:
     from dotenv import load_dotenv
@@ -169,9 +170,9 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'plastico277@gmail.com'
+EMAIL_HOST_USER = 'jd15325@gmail.com'
 # La contraseña se cargará dinámicamente desde ConfiguracionEmpresa
-EMAIL_HOST_PASSWORD = 'upspanghyuwbomxy'  # Contraseña por defecto, se sobrescribe si existe en BD
+EMAIL_HOST_PASSWORD = 'dqfj pjfq vymw ptyg'  # Contraseña por defecto, se sobrescribe si existe en BD
 
 LOGIN_REDIRECT_URL = '/pos/dashboard/'
 LOGIN_URL = '/usuarios/login/'
@@ -194,5 +195,7 @@ ALLOWED_HOSTS = [
 
 # Actualiza también los orígenes de confianza para formularios
 CSRF_TRUSTED_ORIGINS = [
-    'https://poreyctopersonal-production.up.railway.app'
+    'https://poreyctopersonal-production.up.railway.app',
+    'http://localhost',
+    'http://127.0.0.1',
 ]

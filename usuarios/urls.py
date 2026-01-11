@@ -35,4 +35,7 @@ urlpatterns = [
     path('acceso/', views.registro_acceso, name='registro_acceso'),
     path('acceso/usuario/<int:user_id>/', views.registro_acceso_usuario, name='registro_acceso_usuario'),
     path('acceso/estadisticas/', views.estadisticas_acceso, name='estadisticas_acceso'),
+    # Recuperación de contraseña personalizada
+    path('password_reset/', views.password_reset_request, name='password_reset'),
+    path('password_reset_confirm/', views.password_reset_confirm, name='password_reset_confirm'),
 ]
