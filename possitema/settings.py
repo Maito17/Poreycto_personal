@@ -202,6 +202,4 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 # Configuración de Gemini
-GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
-if GEMINI_API_KEY:
-    genai.configure(api_key=GEMINI_API_KEY)
+
