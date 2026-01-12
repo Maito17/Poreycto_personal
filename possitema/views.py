@@ -17,7 +17,9 @@ from django.db.models import Q, Sum, Count, F
 from decimal import Decimal
 from datetime import datetime, timedelta
 import json
-
+import google.generativeai as genai
+from django.views.decorators.csrf import csrf_exempt
+# os y json ya los tienes importados según tu código previo
 from possitema.forms import AperturaCajaForm, ConfiguracionEmpresaForm
 from ventas.models import Venta, Caja, DetalleVenta
 from inventario.models import Producto
