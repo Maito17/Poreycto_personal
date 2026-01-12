@@ -27,6 +27,7 @@ from cliente.models import Cliente
 from gasto.models import Gasto
 from .models import ConfiguracionEmpresa
 from .services import registrar_venta_completa, obtener_configuracion_empresa
+import os
 
 
 def enviar_correo_confirmacion(request):
@@ -737,4 +738,6 @@ def actualizar_ingresos_ajax(request):
         'cajas_abiertas': cajas_abiertas_hoy,
         'cajas_cerradas': cajas_cerradas_hoy,
     }
-    
+    GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
+if GEMINI_API_KEY:
+    genai.configure(api_key=GEMINI_API_KEY)
